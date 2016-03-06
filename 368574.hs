@@ -75,10 +75,11 @@ listFilmsByRating r db = filter (\(Film _ _ _ rating) -> calcRating rating >= r)
 filmsByRatingAsString :: Float -> [Film] -> String
 filmsByRatingAsString r db = filmsAsString (listFilmsByRating r db)
 
---checkDirector :: Film -> String -> Bool
---checkDirector (Film _ fd _ _) director
---    | fd == director = True
---    | otherwise = False
+ratingOfFilmsByDirector :: String -> [Film] -> Float
+ratingOfFilmsByDirector  director db = averageRatingofList (listFilmsByDirector director db)
+
+averageRatingofList :: [Film] -> Float
+averageRatingofList db = (sum (map calcFilmRating db)) / fromIntegral (length db)
 
 -- Demo function to test basic functionality (without persistence - i.e.
 -- testDatabase doesn't change and nothing is saved/loaded to/from file).
