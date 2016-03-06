@@ -69,6 +69,12 @@ listFilmsByDirector director db = filter (\(Film _ fd _ _) -> fd == director) db
 filmsByDirectorAsString :: String -> [Film] -> String
 filmsByDirectorAsString director db = filmsAsString (listFilmsByDirector director db)
 
+listFilmsByRating :: Float -> [Film] -> [Film]
+listFilmsByRating r db = filter (\(Film _ _ _ rating) -> calcRating rating >= r) db
+
+filmsByRatingAsString :: Float -> [Film] -> String
+filmsByRatingAsString r db = filmsAsString (listFilmsByRating r db)
+
 --checkDirector :: Film -> String -> Bool
 --checkDirector (Film _ fd _ _) director
 --    | fd == director = True
