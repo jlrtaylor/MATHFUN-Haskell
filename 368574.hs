@@ -1,6 +1,8 @@
 -- MATHFUN Coursework
 -- 368574
 
+import Text.Printf
+
 -- Types
 type Title = String
 type Director = String
@@ -47,13 +49,19 @@ addFilm :: String -> String -> Int -> [Film] -> [Film]
 addFilm name director year db = db ++ [Film name director year []]
 
 filmsAsString :: [Film] -> String
-filmsAsString db = foldr (++) [] (listFilmTitles db)
+filmsAsString db = foldr (++) [] (listFilmsAsString db)
 
-listFilmTitles :: [Film] -> [String]
-listFilmTitles db = map filmTitleAsString db
+listFilmsAsString :: [Film] -> [String]
+listFilmsAsString db = map filmAsString db
 
-filmTitleAsString :: Film -> String
-filmTitleAsString (Film title _ _ _ ) = title ++ "\n"
+filmAsString :: Film -> String
+filmAsString (Film title dir year rating ) = title ++ ", " ++ dir ++ ", " ++ show year ++ ", " ++ printf "%3.2f" (calcRating rating) ++"\n"
+
+calcFilmRating :: Film -> Float
+calcFilmRating (Film _ _ _ rating) = calcRating rating
+
+calcRating :: [UserRating] -> Float
+calcRating rating = fromIntegral (sum (map snd rating)) / fromIntegral (length rating)
 
 listFilmsByDirector :: String ->[Film] -> [Film]
 listFilmsByDirector director db = filter (\(Film _ fd _ _) -> fd == director) db
