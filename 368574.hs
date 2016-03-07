@@ -81,18 +81,59 @@ ratingOfFilmsByDirector  director db = averageRatingofList (listFilmsByDirector 
 averageRatingofList :: [Film] -> Float
 averageRatingofList db = (sum (map calcFilmRating db)) / fromIntegral (length db)
 
+userRatingsAsString :: String -> [Film] -> String
+userRatingsAsString user db = foldr (++) [] (map (\film -> userRatingOfFilmAsString user film) db)
+
+userRatingOfFilmAsString :: String -> Film -> String
+userRatingOfFilmAsString user (Film title _ _ ratings)
+    | userRatingExists user ratings = title ++ ", " ++ show (snd (head [x | x <- ratings, fst x == user])) ++ "\n"
+    | otherwise = ""
+
+userRatingExists :: String -> Ratings -> Bool
+userRatingExists user ratings
+    | (filter (\(a,_) -> a == user) ratings) == [] = False
+    | otherwise = True
+
+addUserRating :: String -> String -> Int -> [Film] -> [Film]
+addUserRating title user review db
+    | filmNotExists title db = db
+    | otherwise = (filter (\(Film ftitle _ _ _) -> ftitle /= title) db) ++ [newRating (filmByTitle title db) user review]
+
+newRating :: Film -> String -> Int -> Film
+newRating (Film ftitle fdir fyr ratings) user review = (Film ftitle fdir fyr ((filter (\(a,b) -> a /= user) ratings) ++ [(user, review)]))
+
+filmByTitle :: String -> [Film] -> Film
+filmByTitle title db = head (filter (\(Film ftitle _ _ _) -> ftitle == title) db)
+
+filmExists :: String -> [Film] -> Bool
+filmExists title db
+    | (filter (\(Film ftitle _ _ _) -> ftitle == title) db) == [] = False
+    | otherwise = True
+
+filmNotExists :: String -> [Film] -> Bool
+filmNotExists title db
+    | (filter (\(Film ftitle _ _ _) -> ftitle == title) db) == [] = True
+    | otherwise = False
+
 -- Demo function to test basic functionality (without persistence - i.e.
 -- testDatabase doesn't change and nothing is saved/loaded to/from file).
--- demo :: Int -> IO ()
-
+demo :: Int -> IO ()
 --demo 1  = putStrLn all films after adding 2016 film "The BFG" by "Steven Spielberg" to testDatabase
+demo 1 = putStrLn (filmsAsString (addFilm "The BFG" "Steven Spielberg" 2016 testDatabase))
 --demo 2  = putStrLn (fnToTurnAListOfFilmsIntoAMultiLineString testDatabase)
+demo 2 = putStrLn (filmsAsString testDatabase)
 --demo 3  = putStrLn all films by "Ridley Scott"
+demo 3 = putStrLn (filmsByDirectorAsString "Ridley Scott" testDatabase)
 --demo 4  = putStrLn all films with website rating >= 7
+demo 4 = putStrLn (filmsByRatingAsString 7.0 testDatabase)
 --demo 5  = putStrLn average website rating for "Ridley Scott"
+demo 5 = putStrLn (printf "%3.2f" (ratingOfFilmsByDirector "Ridley Scott" testDatabase))
 --demo 6  = putStrLn film titles and user ratings for "Emma"
+demo 6 = putStrLn (userRatingsAsString "Emma" testDatabase)
 --demo 7  = putStrLn all films after Emma rates "Hugo" 10
+demo 7 = putStrLn (filmsAsString(addUserRating "Hugo" "Emma" 10 testDatabase))
 --demo 77 = putStrLn all films after Emma rates "Avatar" 10
+demo 77 = putStrLn (filmsAsString(addUserRating "Avatar" "Emma" 10 testDatabase))
 --demo 8  = putStrLn "films between 2010 and 2014 sorted by website rating"
 
 
