@@ -1,8 +1,9 @@
--- MATHFUN Coursework
 -- 368574
+-- MATHFUN Coursework
 
 import Text.Printf
-import Data.List
+import Data.Function (on)
+import Data.List (sortBy)
 
 -- Types
 type Title = String
@@ -94,7 +95,7 @@ userRatingExists user ratings
 
 addUserRating :: String -> String -> Int -> [Film] -> [Film]
 addUserRating title user review db
-    | filmNotExists title db = db
+    | not (filmExists title db) = db
     | otherwise = (filter (\(Film ftitle _ _ _) -> ftitle /= title) db) ++ [newRating (filmByTitle title db) user review]
 
 newRating :: Film -> String -> Int -> Film
@@ -110,14 +111,17 @@ filmExists title db
 
 filmNotExists :: String -> [Film] -> Bool
 filmNotExists title db
-    | (filter (\(Film ftitle _ _ _) -> ftitle == title) db) == [] = True
+    | filmExists title db = True
     | otherwise = False
 
---sortedYearListAsString :: Int -> Int -> [Film] -> String
---sortedYearListAsString yrB yrE db = filmsAsString (sortFilmsByRating (listFilmsByYears yrB yrE dB)
+sortedYearListAsString :: Int -> Int -> [Film] -> String
+sortedYearListAsString yrB yrE db = filmsAsString (sortFilmsByRating (listFilmsByYears yrB yrE db))
 
---sortFilmsByRating :: [Film] -> [Film]
---sortFilmsByRating db = 
+sortFilmsByRating :: [Film] ->[Film]
+sortFilmsByRating db = map fst (sortBy (compare `on` snd) (map getRating db))
+
+getRating :: Film -> (Film, Float)
+getRating film = (film, calcFilmRating film)
 
 listFilmsByYears :: Int -> Int -> [Film] -> [Film]
 listFilmsByYears yrB yrE db = filter (\(Film _ _ yr _) -> yr >= yrB && yr <= yrE) db
@@ -143,6 +147,7 @@ demo 7 = putStrLn (filmsAsString(addUserRating "Hugo" "Emma" 10 testDatabase))
 --demo 77 = putStrLn all films after Emma rates "Avatar" 10
 demo 77 = putStrLn (filmsAsString(addUserRating "Avatar" "Emma" 10 testDatabase))
 --demo 8  = putStrLn "films between 2010 and 2014 sorted by website rating"
+demo 8 = putStrLn (sortedYearListAsString 2010 2014 testDatabase)
 
 
 -- Your user interface code goes here
