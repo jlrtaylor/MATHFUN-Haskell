@@ -2,6 +2,7 @@
 -- 368574
 
 import Text.Printf
+import Data.List
 
 -- Types
 type Title = String
@@ -49,13 +50,10 @@ addFilm :: String -> String -> Int -> [Film] -> [Film]
 addFilm name director year db = db ++ [Film name director year []]
 
 filmsAsString :: [Film] -> String
-filmsAsString db = foldr (++) [] (listFilmsAsString db)
+filmsAsString db = foldr (++) [] (map formatFilmAsString db)
 
-listFilmsAsString :: [Film] -> [String]
-listFilmsAsString db = map filmAsString db
-
-filmAsString :: Film -> String
-filmAsString (Film title dir year rating ) = title ++ ", " ++ dir ++ ", " ++ show year ++ ", " ++ printf "%3.2f" (calcRating rating) ++"\n"
+formatFilmAsString :: Film -> String
+formatFilmAsString (Film title dir year rating ) = title ++ ", " ++ dir ++ ", " ++ show year ++ ", " ++ printf "%3.2f" (calcRating rating) ++"\n"
 
 calcFilmRating :: Film -> Float
 calcFilmRating (Film _ _ _ rating) = calcRating rating
@@ -114,6 +112,16 @@ filmNotExists :: String -> [Film] -> Bool
 filmNotExists title db
     | (filter (\(Film ftitle _ _ _) -> ftitle == title) db) == [] = True
     | otherwise = False
+
+--sortedYearListAsString :: Int -> Int -> [Film] -> String
+--sortedYearListAsString yrB yrE db = filmsAsString (sortFilmsByRating (listFilmsByYears yrB yrE dB)
+
+--sortFilmsByRating :: [Film] -> [Film]
+--sortFilmsByRating db = 
+
+listFilmsByYears :: Int -> Int -> [Film] -> [Film]
+listFilmsByYears yrB yrE db = filter (\(Film _ _ yr _) -> yr >= yrB && yr <= yrE) db
+
 
 -- Demo function to test basic functionality (without persistence - i.e.
 -- testDatabase doesn't change and nothing is saved/loaded to/from file).
