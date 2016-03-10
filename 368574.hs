@@ -196,7 +196,7 @@ optionHandler "2" name db = do
             menu name (addFilm title director year db)
         else do
             putStrLn "Invalid year"
-            menu name db
+    menu name db
 -- Display all films by director
 optionHandler "3" name db = do
     putStr "Enter director name: "
@@ -205,10 +205,9 @@ optionHandler "3" name db = do
         then do
             putStrLn ("\nAll films by " ++ director)
             putStr (filmsByDirectorAsString director db)
-            menu name db
         else do
             putStrLn ("Director not found")
-            menu name db
+    menu name db
 -- Display films above a certain rating
 optionHandler "4" name db = do
     putStr "Enter rating to filter by: "
@@ -228,10 +227,9 @@ optionHandler "5" name db = do
         then do
             putStr ("Average rating of films by " ++ director ++ " is ")
             putStrLn (printf "%3.2f" (ratingOfFilmsByDirector director db))
-            menu name db
         else do
             putStrLn ("Director not found")
-            menu name db
+    menu name db
 -- Display films a user has rated
 optionHandler "6" name db = do
     putStr "Enter username: "
@@ -239,11 +237,10 @@ optionHandler "6" name db = do
     if (userRatingsAsString username db) == ""
         then do
             putStrLn "User not found"
-            menu name db
         else do
             putStrLn ("\nAll films rated by " ++ username)
             putStr (userRatingsAsString username db)
-            menu name db
+    menu name db
 -- Add or edit a rating
 optionHandler "7" name db = do
     putStr "Enter film to rate: "
@@ -258,10 +255,9 @@ optionHandler "7" name db = do
                     menu name (addUserRating film name rating db)
                 else do
                     putStrLn "The rating was not between 0 and 10 or contained invalid characters"
-                    menu name db
         else do
             putStrLn "Film not found"
-            menu name db
+    menu name db
 -- Search by years
 optionHandler "8" name db = do
     putStr "Enter oldest year to filter by: "
@@ -277,16 +273,13 @@ optionHandler "8" name db = do
                             putStr "\nList of films released between "
                             putStrLn (show(yrB) ++ " and "++ show(yrE) ++ "\n")
                             putStr (sortedYearListAsString yrB yrE db)
-                            menu name db
                         else do
                             putStrLn "No films found during this year range"
-                            menu name db
                 else do
                     putStrLn "Latest year must be equal or greater than oldest year"
-                    menu name db
         else do
             putStrLn "Years were invalid"
-            menu name db
+    menu name db
 -- Exit program
 optionHandler "exit" _ db = do
     putStrLn "Saving database and closing"
@@ -323,7 +316,7 @@ getInt = do
         then do
             return (-1)
         else do
-            return ((read str) :: Int)
+            return ((read (filter(\ch -> isDigit ch ) str)) :: Int)
 
 saveDB :: [Film] -> IO()
 saveDB db = writeFile "filmdb.txt" (show db)
