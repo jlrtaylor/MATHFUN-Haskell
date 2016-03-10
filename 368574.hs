@@ -50,10 +50,10 @@ testDatabase = [Film "Blade Runner" "Ridley Scott" 1982 [("Amy",5), ("Bill",8), 
                ]
 
 -- Functional code
-
 addFilm :: String -> String -> Int -> [Film] -> [Film]
 addFilm name director year db = db ++ [Film name director year []]
 
+-- Formats a list of films as a string
 filmsAsString :: [Film] -> String
 filmsAsString db = foldr (++) [] (map formatFilmAsString db)
 
@@ -118,17 +118,13 @@ directorExists director db
     | (filter (\(Film _ fdirector _ _) -> fdirector == director) db) == [] = False
     | otherwise = True
 
-filmNotExists :: String -> [Film] -> Bool
-filmNotExists title db
-    | filmExists title db = True
-    | otherwise = False
-
 sortedYearListAsString :: Int -> Int -> [Film] -> String
 sortedYearListAsString yrB yrE db = filmsAsString (sortFilmsByRating (listFilmsByYears yrB yrE db))
 
 sortFilmsByRating :: [Film] ->[Film]
 sortFilmsByRating db = map fst (sortBy (compare `on` snd) (map getRating db))
 
+-- used to pass back a tuple used to sort films by rating
 getRating :: Film -> (Film, Float)
 getRating film = (film, calcFilmRating film)
 
@@ -136,8 +132,8 @@ listFilmsByYears :: Int -> Int -> [Film] -> [Film]
 listFilmsByYears yrB yrE db = filter (\(Film _ _ yr _) -> yr >= yrB && yr <= yrE) db
 
 
--- Demo function to test basic functionality (without persistence - i.e.
--- testDatabase doesn't change and nothing is saved/loaded to/from file).
+-- Demo function to test basic functionality without persistence
+-- testDatabase doesn't change and nothing is saved/loaded to/from file
 demo :: Int -> IO ()
 --demo 1  = putStrLn all films after adding 2016 film "The BFG" by "Steven Spielberg" to testDatabase
 demo 1 = putStrLn (filmsAsString (addFilm "The BFG" "Steven Spielberg" 2016 testDatabase))
@@ -159,8 +155,7 @@ demo 77 = putStrLn (filmsAsString(addUserRating "Avatar" "Emma" 10 testDatabase)
 demo 8 = putStrLn (sortedYearListAsString 2010 2014 testDatabase)
 
 
--- Your user interface code goes here
-
+-- User interface code
 main :: IO()
 main = do
     putStrLn "Welcome"
