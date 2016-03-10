@@ -2,6 +2,7 @@
 -- MATHFUN Coursework
 
 import Text.Printf
+import Data.Char (isDigit)
 import Data.Function (on)
 import Data.List (sortBy)
 
@@ -15,6 +16,9 @@ type Ratings = [UserRating]
 -- Film Type definition
 data Film = Film Title Director Year Ratings
     deriving (Eq, Ord, Show, Read)
+
+validNumerics :: String
+validNumerics = "0123456789"
 
 -- Test Database
 testDatabase :: [Film]
@@ -157,8 +161,8 @@ demo 8 = putStrLn (sortedYearListAsString 2010 2014 testDatabase)
 
 -- Your user interface code goes here
 
-start :: IO()
-start = do
+main :: IO()
+main = do
     putStrLn "Welcome"
     putStr "Please enter your name: "
     name <- getLine
@@ -176,21 +180,30 @@ menu name db = do
 
 optionHandler :: String -> String -> [Film] -> IO()
 -- Show contents of database
-optionHandler "display" name db = do
+optionHandler "1" name db = do
     putStrLn "\nList of all films"
     putStr (filmsAsString db)
     menu name db
+optionHandler "11" name db = do
+    putStrLn "\nSorted list of all films"
+    putStr (filmsAsString (sortFilmsByRating db))
+    menu name db
 -- Add film to database
-optionHandler "add" name db = do
+optionHandler "2" name db = do
     putStr "Enter details of film\nTitle: "
     title <- getLine
     putStr "Director: "
     director <- getLine
     putStr "Release Year: "
     year <- getInt
-    menu name (addFilm title director year db)
+    if (year >= 0)
+        then do
+            menu name (addFilm title director year db)
+        else do
+            putStrLn "Invalid year"
+            menu name db
 -- Display all films by director
-optionHandler "director list" name db = do
+optionHandler "3" name db = do
     putStr "Enter director name: "
     director <- getLine
     if (directorExists director db)
@@ -202,7 +215,7 @@ optionHandler "director list" name db = do
             putStrLn ("Director not found")
             menu name db
 -- Display films above a certain rating
-optionHandler "rating" name db = do
+optionHandler "4" name db = do
     putStr "Enter rating to filter by: "
     rating <- getInt
     if rating <= 10 && rating >= 0
@@ -210,10 +223,10 @@ optionHandler "rating" name db = do
             putStrLn ("\nAll films rated higher than " ++ show(rating))
             putStr (filmsByRatingAsString (fromIntegral rating) db)
         else do
-            putStrLn "The rating was not between 0 and 10"
+            putStrLn "The rating was not between 0 and 10 or contained invalid characters"
     menu name db
 -- Display average rating of films by a director
-optionHandler "average rating" name db = do
+optionHandler "5" name db = do
     putStr "Enter director name: "
     director <- getLine
     if (directorExists director db)
@@ -225,7 +238,7 @@ optionHandler "average rating" name db = do
             putStrLn ("Director not found")
             menu name db
 -- Display films a user has rated
-optionHandler "search user" name db = do
+optionHandler "6" name db = do
     putStr "Enter username: "
     username <- getLine
     if (userRatingsAsString username db) == ""
@@ -237,7 +250,7 @@ optionHandler "search user" name db = do
             putStr (userRatingsAsString username db)
             menu name db
 -- Add or edit a rating
-optionHandler "rate" name db = do
+optionHandler "7" name db = do
     putStr "Enter film to rate: "
     film <- getLine
     if (filmExists film db)
@@ -249,33 +262,40 @@ optionHandler "rate" name db = do
                     putStrLn ("You gave " ++ film ++ " a rating of " ++ show(rating))
                     menu name (addUserRating film name rating db)
                 else do
-                    putStrLn "The rating was not between 0 and 10"
+                    putStrLn "The rating was not between 0 and 10 or contained invalid characters"
                     menu name db
         else do
             putStrLn "Film not found"
             menu name db
 -- Search by years
-optionHandler "year filter" name db = do
+optionHandler "8" name db = do
     putStr "Enter oldest year to filter by: "
     yrB <- getInt
     putStr "Enter latest year to filter by: "
     yrE <- getInt
-    if yrE >= yrB
+    if yrB >= 0 && yrE >= 0
         then do
-            if (sortedYearListAsString yrB yrE db) /= ""
+            if yrE >= yrB
                 then do
-                    putStr "\nList of films released between "
-                    putStrLn (show(yrB) ++ " and "++ show(yrE) ++ "\n")
-                    putStr (sortedYearListAsString yrB yrE db)
-                    menu name db
+                    if (sortedYearListAsString yrB yrE db) /= ""
+                        then do
+                            putStr "\nList of films released between "
+                            putStrLn (show(yrB) ++ " and "++ show(yrE) ++ "\n")
+                            putStr (sortedYearListAsString yrB yrE db)
+                            menu name db
+                        else do
+                            putStrLn "No films found during this year range"
+                            menu name db
                 else do
-                    putStrLn "No films found during this year range"
+                    putStrLn "Latest year must be equal or greater than oldest year"
                     menu name db
         else do
-            putStrLn "Latest year must be equal or greater than oldest year"
+            putStrLn "Years were invalid"
             menu name db
 -- Exit program
-optionHandler "exit" _ db = saveDB db
+optionHandler "exit" _ db = do
+    putStrLn "Saving database and closing"
+    saveDB db
 -- Displays command list
 optionHandler "help" name db = do
     printHelp
@@ -286,15 +306,32 @@ optionHandler _ name db = do
     menu name db
 
 
-
 printHelp :: IO()
 printHelp = do
     putStrLn "Here is a list of commands:"
+    putStrLn "   1 : Display all films"
+    putStrLn "  11 : Display all films sorted by rating"
+    putStrLn "   2 : Add a new film"
+    putStrLn "   3 : Filter by director"
+    putStrLn "   4 : Filter by rating"
+    putStrLn "   5 : Display average rating of all films by a director"
+    putStrLn "   6 : Display films a user has rated"
+    putStrLn "   7 : Rate a film"
+    putStrLn "   8 : Filter by years, and sort by rating"
+    putStrLn "help : displays this list"
+    putStrLn "exit : saves the database and closes the program"
 
 getInt :: IO Int
 getInt = do
     str <- getLine
-    return (read str :: Int)
+    if (filter(\ch -> isDigit ch ) str) == ""
+        then do
+            return (-1)
+        else do
+            return ((read str) :: Int)
 
 saveDB :: [Film] -> IO()
 saveDB db = writeFile "filmdb.txt" (show db)
+
+resetDB :: IO()
+resetDB = saveDB testDatabase
