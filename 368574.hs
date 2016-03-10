@@ -162,7 +162,7 @@ start = do
     putStrLn "Welcome"
     putStr "Please enter your name: "
     name <- getLine
-    putStrLn ("Hello " ++ name)
+    putStrLn ("\nHello " ++ name)
     printHelp
     dbcontents <- readFile "filmdb.txt"
     menu name (read (dbcontents) :: [Film])
@@ -177,7 +177,8 @@ menu name db = do
 optionHandler :: String -> String -> [Film] -> IO()
 -- Show contents of database
 optionHandler "display" name db = do
-    putStrLn (filmsAsString db)
+    putStrLn "\nList of all films"
+    putStr (filmsAsString db)
     menu name db
 -- Add film to database
 optionHandler "add" name db = do
@@ -194,7 +195,8 @@ optionHandler "director list" name db = do
     director <- getLine
     if (directorExists director db)
         then do
-            putStrLn (filmsByDirectorAsString director db)
+            putStrLn ("\nAll films by " ++ director)
+            putStr (filmsByDirectorAsString director db)
             menu name db
         else do
             putStrLn ("Director not found")
@@ -203,7 +205,12 @@ optionHandler "director list" name db = do
 optionHandler "rating" name db = do
     putStr "Enter rating to filter by: "
     rating <- getInt
-    putStrLn (filmsByRatingAsString (fromIntegral rating) db)
+    if rating <= 10 && rating >= 0
+        then do
+            putStrLn ("\nAll films rated higher than " ++ show(rating))
+            putStr (filmsByRatingAsString (fromIntegral rating) db)
+        else do
+            putStrLn "The rating was not between 0 and 10"
     menu name db
 -- Display average rating of films by a director
 optionHandler "average rating" name db = do
@@ -212,7 +219,7 @@ optionHandler "average rating" name db = do
     if (directorExists director db)
         then do
             putStr ("Average rating of films by " ++ director ++ " is ")
-            putStrLn (printf "%3.2f" (ratingOfFilmsByDirector director db) ++ "\n")
+            putStrLn (printf "%3.2f" (ratingOfFilmsByDirector director db))
             menu name db
         else do
             putStrLn ("Director not found")
@@ -226,7 +233,8 @@ optionHandler "search user" name db = do
             putStrLn "User not found"
             menu name db
         else do
-            putStrLn (userRatingsAsString username db)
+            putStrLn ("\nAll films rated by " ++ username)
+            putStr (userRatingsAsString username db)
             menu name db
 -- Add or edit a rating
 optionHandler "rate" name db = do
@@ -236,11 +244,36 @@ optionHandler "rate" name db = do
         then do
             putStr "Enter rating out of 10: "
             rating <-getInt
-            menu name (addUserRating film name rating db)
+            if rating <= 10 && rating >= 0
+                then do
+                    putStrLn ("You gave " ++ film ++ " a rating of " ++ show(rating))
+                    menu name (addUserRating film name rating db)
+                else do
+                    putStrLn "The rating was not between 0 and 10"
+                    menu name db
         else do
-            putStr "Film not found"
+            putStrLn "Film not found"
             menu name db
-
+-- Search by years
+optionHandler "year filter" name db = do
+    putStr "Enter oldest year to filter by: "
+    yrB <- getInt
+    putStr "Enter latest year to filter by: "
+    yrE <- getInt
+    if yrE >= yrB
+        then do
+            if (sortedYearListAsString yrB yrE db) /= ""
+                then do
+                    putStr "\nList of films released between "
+                    putStrLn (show(yrB) ++ " and "++ show(yrE) ++ "\n")
+                    putStr (sortedYearListAsString yrB yrE db)
+                    menu name db
+                else do
+                    putStrLn "No films found during this year range"
+                    menu name db
+        else do
+            putStrLn "Latest year must be equal or greater than oldest year"
+            menu name db
 -- Exit program
 optionHandler "exit" _ db = saveDB db
 -- Displays command list
@@ -256,7 +289,7 @@ optionHandler _ name db = do
 
 printHelp :: IO()
 printHelp = do
-    putStrLn "List of valid commands:"
+    putStrLn "Here is a list of commands:"
 
 getInt :: IO Int
 getInt = do
