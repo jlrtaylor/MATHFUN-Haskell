@@ -303,7 +303,7 @@ optionHandler _ name db = do
 
 printHelp :: IO()
 printHelp = do
-    putStrLn "Here is a list of commands:"
+    putStrLn "Commands:"
     putStrLn "   1 : Display all films"
     putStrLn "  11 : Display all films sorted by rating"
     putStrLn "   2 : Add a new film"
