@@ -45,7 +45,7 @@ testDatabase = [Film "Blade Runner" "Ridley Scott" 1982 [("Amy",5), ("Bill",8), 
                 Film "Hugo" "Martin Scorsese" 2011 [("Sam",9), ("Wally",3), ("Zoe",5), ("Liz",7)]
                ]
 
---  Your functional code goes here
+-- Functional code
 
 addFilm :: String -> String -> Int -> [Film] -> [Film]
 addFilm name director year db = db ++ [Film name director year []]
@@ -60,7 +60,7 @@ calcFilmRating :: Film -> Float
 calcFilmRating (Film _ _ _ rating) = calcRating rating
 
 calcRating :: [UserRating] -> Float
-calcRating rating = fromIntegral (sum (map snd rating)) / fromIntegral (length rating)
+calcRating rating = fromIntegral (sum (map snd rating)) / max 1 (fromIntegral (length rating))
 
 listFilmsByDirector :: String ->[Film] -> [Film]
 listFilmsByDirector director db = filter (\(Film _ fd _ _) -> fd == director) db
@@ -109,6 +109,11 @@ filmExists title db
     | (filter (\(Film ftitle _ _ _) -> ftitle == title) db) == [] = False
     | otherwise = True
 
+directorExists :: String -> [Film] -> Bool
+directorExists director db
+    | (filter (\(Film _ fdirector _ _) -> fdirector == director) db) == [] = False
+    | otherwise = True
+
 filmNotExists :: String -> [Film] -> Bool
 filmNotExists title db
     | filmExists title db = True
@@ -151,3 +156,112 @@ demo 8 = putStrLn (sortedYearListAsString 2010 2014 testDatabase)
 
 
 -- Your user interface code goes here
+
+start :: IO()
+start = do
+    putStrLn "Welcome"
+    putStr "Please enter your name: "
+    name <- getLine
+    putStrLn ("Hello " ++ name)
+    printHelp
+    dbcontents <- readFile "filmdb.txt"
+    menu name (read (dbcontents) :: [Film])
+
+menu :: String -> [Film] -> IO()
+menu name db = do
+    putStr ("\nEnter command: ")
+    option <- getLine
+    optionHandler option name db
+
+
+optionHandler :: String -> String -> [Film] -> IO()
+-- Show contents of database
+optionHandler "display" name db = do
+    putStrLn (filmsAsString db)
+    menu name db
+-- Add film to database
+optionHandler "add" name db = do
+    putStr "Enter details of film\nTitle: "
+    title <- getLine
+    putStr "Director: "
+    director <- getLine
+    putStr "Release Year: "
+    year <- getInt
+    menu name (addFilm title director year db)
+-- Display all films by director
+optionHandler "director list" name db = do
+    putStr "Enter director name: "
+    director <- getLine
+    if (directorExists director db)
+        then do
+            putStrLn (filmsByDirectorAsString director db)
+            menu name db
+        else do
+            putStrLn ("Director not found")
+            menu name db
+-- Display films above a certain rating
+optionHandler "rating" name db = do
+    putStr "Enter rating to filter by: "
+    rating <- getInt
+    putStrLn (filmsByRatingAsString (fromIntegral rating) db)
+    menu name db
+-- Display average rating of films by a director
+optionHandler "average rating" name db = do
+    putStr "Enter director name: "
+    director <- getLine
+    if (directorExists director db)
+        then do
+            putStr ("Average rating of films by " ++ director ++ " is ")
+            putStrLn (printf "%3.2f" (ratingOfFilmsByDirector director db) ++ "\n")
+            menu name db
+        else do
+            putStrLn ("Director not found")
+            menu name db
+-- Display films a user has rated
+optionHandler "search user" name db = do
+    putStr "Enter username: "
+    username <- getLine
+    if (userRatingsAsString username db) == ""
+        then do
+            putStrLn "User not found"
+            menu name db
+        else do
+            putStrLn (userRatingsAsString username db)
+            menu name db
+-- Add or edit a rating
+optionHandler "rate" name db = do
+    putStr "Enter film to rate: "
+    film <- getLine
+    if (filmExists film db)
+        then do
+            putStr "Enter rating out of 10: "
+            rating <-getInt
+            menu name (addUserRating film name rating db)
+        else do
+            putStr "Film not found"
+            menu name db
+
+-- Exit program
+optionHandler "exit" _ db = saveDB db
+-- Displays command list
+optionHandler "help" name db = do
+    printHelp
+    menu name db
+-- Wildcard catches invalid commands
+optionHandler _ name db = do
+    putStrLn "Command not found, type help for list of valid commands"
+    menu name db
+
+
+
+printHelp :: IO()
+printHelp = do
+    putStrLn "List of valid commands:"
+
+getInt :: IO Int
+getInt = do
+    str <- getLine
+    return (read str :: Int)
+
+saveDB :: [Film] -> IO()
+saveDB db = writeFile "filmdb.txt" (show db)
