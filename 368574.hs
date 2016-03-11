@@ -75,6 +75,9 @@ filmsByDirectorAsString director db = filmsAsString (listFilmsByDirector directo
 listFilmsByRating :: Float -> [Film] -> [Film]
 listFilmsByRating r db = filter (\(Film _ _ _ rating) -> calcRating rating >= r) db
 
+filmsAbove7AsString :: [Film] -> String
+filmsAbove7AsString db = filmsByRatingAsString 7.0 db
+
 filmsByRatingAsString :: Float -> [Film] -> String
 filmsByRatingAsString r db = filmsAsString (listFilmsByRating r db)
 
@@ -142,7 +145,7 @@ demo 2 = putStrLn (filmsAsString testDatabase)
 --demo 3  = putStrLn all films by "Ridley Scott"
 demo 3 = putStrLn (filmsByDirectorAsString "Ridley Scott" testDatabase)
 --demo 4  = putStrLn all films with website rating >= 7
-demo 4 = putStrLn (filmsByRatingAsString 7.0 testDatabase)
+demo 4 = putStrLn (filmsAbove7AsString testDatabase)
 --demo 5  = putStrLn average website rating for "Ridley Scott"
 demo 5 = putStrLn (printf "%3.2f" (ratingOfFilmsByDirector "Ridley Scott" testDatabase))
 --demo 6  = putStrLn film titles and user ratings for "Emma"
@@ -156,6 +159,8 @@ demo 8 = putStrLn (sortedYearListAsString 2010 2014 testDatabase)
 
 
 -- User interface code
+-- Will cause an exception if filmdb.txt doesn't exist
+-- use createDB function to create filmdb.txt with the testDatabase
 main :: IO()
 main = do
     putStrLn "Welcome"
@@ -164,7 +169,7 @@ main = do
     putStrLn ("\nHello " ++ name)
     printHelp
     dbcontents <- readFile "filmdb.txt"
-    menu name (read (dbcontents) :: [Film])
+    menu name (read dbcontents :: [Film])
 
 menu :: String -> [Film] -> IO()
 menu name db = do
@@ -175,16 +180,12 @@ menu name db = do
 
 optionHandler :: String -> String -> [Film] -> IO()
 -- Show contents of database
-optionHandler "1" name db = do
+optionHandler "2" name db = do
     putStrLn "\nList of all films"
     putStr (filmsAsString db)
     menu name db
-optionHandler "11" name db = do
-    putStrLn "\nSorted list of all films"
-    putStr (filmsAsString (sortFilmsByRating db))
-    menu name db
 -- Add film to database
-optionHandler "2" name db = do
+optionHandler "1" name db = do
     putStr "Enter details of film\nTitle: "
     title <- getLine
     putStr "Director: "
@@ -208,8 +209,13 @@ optionHandler "3" name db = do
         else do
             putStrLn ("Director not found")
     menu name db
--- Display films above a certain rating
+-- Display films above a rating of 7
 optionHandler "4" name db = do
+    putStrLn ("\nAll films rated higher than 7")
+    putStrLn (filmsAbove7AsString testDatabase)
+    menu name db
+-- Display films above a certain rating
+optionHandler "44" name db = do
     putStr "Enter rating to filter by: "
     rating <- getInt
     if rating <= 10 && rating >= 0
@@ -298,11 +304,11 @@ optionHandler _ name db = do
 printHelp :: IO()
 printHelp = do
     putStrLn "Commands:"
-    putStrLn "   1 : Display all films"
-    putStrLn "  11 : Display all films sorted by rating"
-    putStrLn "   2 : Add a new film"
+    putStrLn "   1 : Add a new film"
+    putStrLn "   2 : Display all films"
     putStrLn "   3 : Filter by director"
-    putStrLn "   4 : Filter by rating"
+    putStrLn "   4 : List films with a rating above 7"
+    putStrLn "  44 : Filter by rating"
     putStrLn "   5 : Display average rating of all films by a director"
     putStrLn "   6 : Display films a user has rated"
     putStrLn "   7 : Rate a film"
@@ -322,6 +328,6 @@ getInt = do
 saveDB :: [Film] -> IO()
 saveDB db = writeFile "filmdb.txt" (show db)
 
--- resets the databse file to the contents of testDatabase
-resetDB :: IO()
-resetDB = saveDB testDatabase
+-- Creates or overwrites filmdb.txt to the contents of testDatabase
+createDB :: IO()
+createDB = saveDB testDatabase
