@@ -1,6 +1,9 @@
 -- 368574
 -- MATHFUN Coursework
 
+-- main function will cause an exception if filmdb.txt doesn't exist
+-- use createDB function to create filmdb.txt with the testDatabase
+
 import Text.Printf
 import Data.Char (isDigit)
 import Data.Function (on)
