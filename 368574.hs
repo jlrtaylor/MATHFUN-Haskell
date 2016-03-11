@@ -67,7 +67,8 @@ calcFilmRating :: Film -> Float
 calcFilmRating (Film _ _ _ rating) = calcRating rating
 
 calcRating :: [UserRating] -> Float
-calcRating rating = fromIntegral (sum (map snd rating)) / max 1 (fromIntegral (length rating))
+calcRating [] = 0
+calcRating rating = fromIntegral (sum (map snd rating)) / fromIntegral (length rating)
 
 listFilmsByDirector :: String ->[Film] -> [Film]
 listFilmsByDirector director db = filter (\(Film _ fd _ _) -> fd == director) db
@@ -88,7 +89,8 @@ ratingOfFilmsByDirector :: String -> [Film] -> Float
 ratingOfFilmsByDirector  director db = averageRatingofList (listFilmsByDirector director db)
 
 averageRatingofList :: [Film] -> Float
-averageRatingofList db = (sum (map calcFilmRating db)) / max 1 (fromIntegral (length db))
+averageRatingofList [] = 0
+averageRatingofList db = (sum (map calcFilmRating db)) / fromIntegral (length db)
 
 userRatingsAsString :: String -> [Film] -> String
 userRatingsAsString user db = foldr (++) [] (map (\film -> userRatingOfFilmAsString user film) db)
