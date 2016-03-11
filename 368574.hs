@@ -1,8 +1,8 @@
 -- 368574
 -- MATHFUN Coursework
 
--- main function will cause an exception if filmdb.txt doesn't exist
--- use createDB function to create filmdb.txt with the testDatabase
+-- Main function will cause an exception if filmdb.txt doesn't exist
+-- Use createDB function to create filmdb.txt with the testDatabase
 
 import Text.Printf
 import Data.Char (isDigit)
@@ -162,8 +162,9 @@ demo 8 = putStrLn (sortedYearListAsString 2010 2014 testDatabase)
 
 
 -- User interface code
+
 -- Will cause an exception if filmdb.txt doesn't exist
--- use createDB function to create filmdb.txt with the testDatabase
+-- Use createDB function to create filmdb.txt with the testDatabase
 main :: IO()
 main = do
     putStrLn "Welcome"
