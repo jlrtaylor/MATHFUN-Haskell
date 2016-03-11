@@ -88,7 +88,7 @@ ratingOfFilmsByDirector :: String -> [Film] -> Float
 ratingOfFilmsByDirector  director db = averageRatingofList (listFilmsByDirector director db)
 
 averageRatingofList :: [Film] -> Float
-averageRatingofList db = (sum (map calcFilmRating db)) / fromIntegral (length db)
+averageRatingofList db = (sum (map calcFilmRating db)) / max 1 (fromIntegral (length db))
 
 userRatingsAsString :: String -> [Film] -> String
 userRatingsAsString user db = foldr (++) [] (map (\film -> userRatingOfFilmAsString user film) db)
@@ -128,7 +128,7 @@ sortedYearListAsString :: Int -> Int -> [Film] -> String
 sortedYearListAsString yrB yrE db = filmsAsString (sortFilmsByRating (listFilmsByYears yrB yrE db))
 
 sortFilmsByRating :: [Film] ->[Film]
-sortFilmsByRating db = map fst (sortBy (compare `on` snd) (map getRating db))
+sortFilmsByRating db = reverse (map fst (sortBy (compare `on` snd) (map getRating db)))
 
 -- used to pass back a tuple used to sort films by rating
 getRating :: Film -> (Film, Float)
