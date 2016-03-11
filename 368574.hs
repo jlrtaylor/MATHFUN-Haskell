@@ -196,7 +196,7 @@ optionHandler "2" name db = do
             menu name (addFilm title director year db)
         else do
             putStrLn "Invalid year"
-    menu name db
+            menu name db
 -- Display all films by director
 optionHandler "3" name db = do
     putStr "Enter director name: "
@@ -255,9 +255,10 @@ optionHandler "7" name db = do
                     menu name (addUserRating film name rating db)
                 else do
                     putStrLn "The rating was not between 0 and 10 or contained invalid characters"
+                    menu name db
         else do
             putStrLn "Film not found"
-    menu name db
+            menu name db
 -- Search by years
 optionHandler "8" name db = do
     putStr "Enter oldest year to filter by: "
@@ -321,5 +322,6 @@ getInt = do
 saveDB :: [Film] -> IO()
 saveDB db = writeFile "filmdb.txt" (show db)
 
+-- resets the databse file to the contents of testDatabase
 resetDB :: IO()
 resetDB = saveDB testDatabase
