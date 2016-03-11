@@ -312,7 +312,7 @@ printHelp = do
 getInt :: IO Int
 getInt = do
     str <- getLine
-    if (filter(\ch -> isDigit ch ) str) == ""
+    if (length str) /= length (filter(\ch -> isDigit ch ) str)
         then do
             return (-1)
         else do
